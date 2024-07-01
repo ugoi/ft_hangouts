@@ -1,4 +1,4 @@
-# ft_hangouts The Grand Ambassador
+# ft_hangouts The Grand Ambassador (ios)
 
 ## Summary
 Create a mobile contact management application to understand mobile systems and OS interactions.
@@ -7,7 +7,7 @@ Create a mobile contact management application to understand mobile systems and 
 4
 
 ## Introduction
-Design a mobile app for creating, managing contacts, and sending text messages. Learn Android and iOS SDKs.
+Design a mobile app for creating, managing contacts, and sending text messages. Learn Android or iOS SDKs.
 
 ## Objectives
 - Manage contacts (create, edit, delete).
