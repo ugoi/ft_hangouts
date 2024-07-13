@@ -8,14 +8,44 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var manager = ContactsManager()
+    @EnvironmentObject var navigationManager: NavigationManager
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack(path: $navigationManager.path) {
+            VStack(alignment: .leading) {
+                Text("Contacts")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                List {
+                    ForEach(manager.contacts) { contact in
+                        NavigationLink(value: contact) {
+                            Text("\(contact.name)")
+                        }
+                        .listRowInsets(EdgeInsets())
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .navigationDestination(for: Contact.self) { contact in
+                    VStack {
+                        ContactDetailView(
+                            contactsManager: manager, contact: $manager.contacts.first(where: { $0.id == contact.id })!)
+                    }
+                }
+
+                Button(action: {
+                    if let index = manager.contacts.firstIndex(where: { $0.id == manager.contacts[1].id }) {
+                        manager.contacts.remove(at: index)
+                    }
+                }) {
+                    Text("Delete Aaron")
+                }
+            }
+            .padding(.horizontal, 20.0)
         }
-        .padding()
+        .onAppear {
+            manager.loadContacts()
+        }
     }
 }
 

@@ -7,9 +7,13 @@
 
 import SwiftUI
 
-struct EditContactDetailView: View {
-    var contact: Contact
+struct EditContactView: View {
+    @Binding var contact: Contact
+    @ObservedObject var contactsManager: ContactsManager
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @EnvironmentObject var navigationManager: NavigationManager
+
+    @State private var name: String = ""
     // UI
     var body: some View {
         VStack {
@@ -20,24 +24,27 @@ struct EditContactDetailView: View {
                         // Action for back button
                         self.presentationMode.wrappedValue.dismiss()
                     }) {
-                        Image(systemName: "arrow.left")
-                            .font(.title)
-                            .foregroundColor(.white)
+                        Text("Cancle")
+                            .foregroundColor(.blue)
                             .padding(.horizontal, 11.0).padding(.vertical, 6)
-                            .background(Color("ButtonBackgroundLight"))
-                            .clipShape(Circle())
                     }
                     Spacer()
                     Button(action: {
-                        // Action for edit button
+                        var newContact = contact
+                        newContact.name = name
+//                        contact = newContact
+//                        contactsManager.updateContact(id: contact.id, newContact: newContact)
+                        contact.update(newContact: newContact)
+                        self.presentationMode.wrappedValue.dismiss()
+
                     }) {
-                        Text("Edit")
-                            .font(.title3).foregroundStyle(.white).padding(.horizontal, 11.0).padding(.vertical, 6).background(Color("ButtonBackgroundLight")).clipShape(RoundedRectangle(cornerRadius: 30))
+                        Text("Done").fontWeight(.bold)
+                            .foregroundStyle(.blue).padding(.horizontal, 11.0).padding(.vertical, 6)
                     }
                 }
 
                 // Profile Image and Name
-                VStack {
+                VStack(spacing: 13) {
                     Image("Avatar") // Replace with your image asset name
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -45,41 +52,13 @@ struct EditContactDetailView: View {
                         .clipShape(Circle())
                         .shadow(radius: 10)
 
-                    Text(contact.name)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding(.top, 10)
-                        .foregroundStyle(Color.white)
-
-                    // Message and Call buttons
-                    HStack {
-                        Button(action: {
-                            // Action for message button
-                            sendIMessage()
-                        }) {
-                            VStack {
-                                Image(systemName: "message.fill")
-                                Text("message")
-                            }
-                            .frame(width: 98, height: 58)
-                            .background(Color("ButtonBackground"))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                        .foregroundStyle(Color.white)
-                        Button(action: {
-                            // Action for call button
-                            call()
-                        }) {
-                            VStack {
-                                Image(systemName: "phone.fill")
-                                Text("call")
-                            }
-                            .frame(width: 98, height: 58)
-                            .background(Color("ButtonBackground"))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                        .foregroundStyle(Color.white)
+                    VStack {
+                        Text("Add photo")
                     }
+                    .padding(.horizontal, 23.0)
+                    .padding(.vertical, 8.0)
+                    .background(Color("ButtonBackground"))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 }
                 .padding(.bottom)
             }
@@ -89,45 +68,53 @@ struct EditContactDetailView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    if let mobile = contact.mobile {
-                        ContactDetail(labelText: Text("mobile")
-                            .font(.headline)) {
-                                Text(mobile)
-                                    .foregroundColor(.blue)
-                            }
+                    EditContactDetail(
+                        labelText: Text("name"),
+                        text: $name
+
+                    ) {
                     }
 
-                    if let email = contact.email {
-                        ContactDetail(labelText: Text("email")
-                            .font(.headline)) {
-                                Text(email)
-                                    .foregroundColor(.blue)
-                            }
-                    }
+//                    EditContactDetail(labelText: Text("mobile"), text: <#T##Binding<String>#>
+//
+//                    ) {
+//                    }
 
-                    if let address = contact.address {
-                        ContactDetail(labelText: Text("address")
-                            .font(.headline)) {
-                                Text(address.street)
-                                Text(address.city)
-                                Text(address.country)
-                            }
-                    }
-                    if let relationship = contact.relationship {
-                        ContactDetail(labelText: Text("relationship")
-                            .font(.headline)) {
-                                Text(relationship)
-                            }
-                    }
-
-                    if let birthday = contact.birthday {
-                        ContactDetail(labelText: Text("birthday")
-                            .font(.headline)) {
-                                Text(birthday.formatted(date: .numeric, time: .omitted))
-                            }
+//                    EditContactDetail(labelText: Text("email")
+//                    ) {
+//                    }
+//
+//                    EditContactDetail(labelText: Text("street")
+//                    ) {
+//                    }
+//                    EditContactDetail(labelText: Text("city")
+//                    ) {
+//                    }
+//
+//                    EditContactDetail(labelText: Text("country")
+//                    ) {
+//                    }
+//
+//                    EditContactDetail(labelText: Text("relationship")
+//                    ) {
+//                    }
+//
+//                    EditContactDetail(labelText: Text("birthday")
+//                    ) {
+//                    }
+//
+                    DeleteContactButton(labelText: Text("delete")
+                                        ,
+                                        onDelete: {
+//                                            contactsManager.deleteContact(id: contact.id)
+                                            contact.delete()
+                                            navigationManager.path.removeLast(navigationManager.path.count)
+                                        }
+                    ) {
+                        Text("Delete Contact")
+                            .foregroundStyle(Color.red)
                     }
                 }
-                .padding()
 
                 Spacer()
             }
@@ -154,34 +141,67 @@ struct EditContactDetailView: View {
     }
 }
 
-struct ContactDetailView_Previews: PreviewProvider {
+struct EditContactView_Previews: PreviewProvider {
     static var previews: some View {
-        ContactDetailView(
-            contact: Contact(
-                id: UUID(), name: "Aaron",
-                mobile: "+41 78 626 18 09",
-                email: "aaron@icloud.com",
-                address: Address(street: "Musterstrasse 12", city: "8047 Zürich", country: "Switzerland"),
-                relationship: "X-Classmate",
-                birthday: Date()
-            )
+        let manager = ContactsManager()
+        manager.loadContacts()
+
+        return EditContactView(
+            contact: .constant(manager.contacts.first!), // Assuming you want to preview the first contact
+            contactsManager: manager
         )
     }
 }
 
-struct ContactDetail<Content: View>: View {
+struct EditContactDetail<Content: View>: View {
     var labelText: Text
+    @Binding var text: String
     @ViewBuilder let content: Content
+
     var body: some View {
-        VStack(alignment: .leading) {
-            labelText
-            content
+        Button(action: {
+        }) {
+            VStack(alignment: .leading) {
+                TextField("\(labelText)", text: $text)
+                    .frame(alignment: .leading)
+                    .multilineTextAlignment(.leading)
+
+//                if Content.self == EmptyView.self {
+//                    labelText
+//                        .foregroundStyle(Color("PlaceHolderText"))
+//                } else {
+//                    content
+//                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20.0)
+            .padding(.vertical, 12.0)
+            .background(Color("ContactDetail"))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20.0)
-        .padding(.vertical, 12.0)
-        .background(Color("ContactDetail"))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
+struct DeleteContactButton<Content: View>: View {
+    var labelText: Text
+    var onDelete: (() -> Void)?
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        Button(action: { onDelete?() }) {
+            VStack(alignment: .leading) {
+                if Content.self == EmptyView.self {
+                    labelText
+                        .foregroundStyle(Color("PlaceHolderText"))
+                } else {
+                    content
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20.0)
+            .padding(.vertical, 12.0)
+            .background(Color("ContactDetail"))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+}
