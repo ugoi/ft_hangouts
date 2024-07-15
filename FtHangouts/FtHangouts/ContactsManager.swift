@@ -6,55 +6,83 @@
 //
 
 import Foundation
+import SwiftData
+import SwiftUI
 
 class ContactsManager: ObservableObject {
     // Array to store contacts
     @Published var contacts: [Contact] = []
+    public var context: ModelContext
+    var swiftDataContacts = [SwiftDataContact]()
 
-    init() {
+    init(context: ModelContext) {
+        self.context = context
         loadContacts()
     }
 
     func loadContacts() {
-        contacts = [
-            .init(id: UUID(), name: "Aaron",
-                  mobile: "+41 78 626 18 09",
-                  email: "aaron@icloud.com",
-                  address: Address(street: "Musterstrasse 12", city: "8047 Zürich", country: "Switzerland"),
-                  relationship: "X-Classmate",
-                  birthday: Date(),
-                  onUpdate: updateContact,
-                  onDelete: deleteContact
+        do {
+            let descriptor = FetchDescriptor<SwiftDataContact>()
+            swiftDataContacts = try context.fetch(descriptor)
+        } catch {
+            print("Fetch failed")
+        }
 
-            ),
-            .init(id: UUID(), name: "Ali",
-                  mobile: "+41 78 626 18 08",
-                  email: "ali@icloud.com",
-                  address: Address(street: "Musterstrasse 12", city: "8047 Zürich", country: "Switzerland"),
-                  relationship: "Example",
-                  birthday: Date(),
-                  onUpdate: updateContact,
-                  onDelete: deleteContact
-            ),
-        ]
+        if swiftDataContacts.isEmpty {
+            contacts = []
+        } else {
+            contacts = swiftDataContacts.map { Contact(id: $0.id, firstName: $0.firstName, mobile: $0.mobile, relationship: $0.relationship, onUpdate: updateContact, onDelete: deleteContact) }
+        }
     }
 
     // Function to add a contact
     func createContact(contact: Contact) {
-        contacts.append(contact)
+        var newContact = contact
+        newContact.onDelete = deleteContact
+        newContact.onUpdate = updateContact
+        contacts.append(newContact)
+
+        let swiftDataContact = SwiftDataContact(id: newContact.id, firstName: newContact.firstName, lastName: newContact.lastName, mobile: newContact.mobile, relationship: newContact.relationship)
+        context.insert(swiftDataContact)
+        loadContacts()
     }
 
     // Update a contact
     func updateContact(id: UUID, newContact: Contact) {
+        print("Update contact")
         if let index = contacts.firstIndex(where: { $0.id == id }) {
-            contacts[index] = newContact
+            var modifiedContact = newContact
+
+            modifiedContact.onDelete = deleteContact
+            modifiedContact.onUpdate = updateContact
+            contacts[index] = modifiedContact
+        }
+
+        if let index = swiftDataContacts.firstIndex(where: { $0.id == id }) {
+            swiftDataContacts[index].firstName = newContact.firstName
+            swiftDataContacts[index].lastName = newContact.lastName
+            swiftDataContacts[index].email = newContact.email
+            swiftDataContacts[index].imageName = newContact.imageName
+            swiftDataContacts[index].mobile = newContact.mobile
+            swiftDataContacts[index].relationship = newContact.relationship
+
+            if let address = newContact.address {
+                swiftDataContacts[index].address = SwiftDataAddress(street: address.street, city: address.city, country: address.country)
+            }
+            swiftDataContacts[index].birthday = newContact.birthday
         }
     }
 
     // Function to remove a contact
     func deleteContact(id: UUID) {
+        print("Delete Contact")
+        print(id.uuidString)
         if let index = contacts.firstIndex(where: { $0.id == id }) {
             contacts.remove(at: index)
+        }
+
+        if let index = swiftDataContacts.firstIndex(where: { $0.id == id }) {
+            context.delete(swiftDataContacts[index])
         }
     }
 }

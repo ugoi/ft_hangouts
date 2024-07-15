@@ -50,7 +50,7 @@ struct ContactDetailView: View {
                         .clipShape(Circle())
                         .shadow(radius: 10)
 
-                    Text(contact.name)
+                    Text("\(contact.firstName ?? "") \(contact.lastName ?? "")")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .padding(.top, 10)
@@ -161,17 +161,12 @@ struct ContactDetailView: View {
 
 // struct ContactDetailView_Previews: PreviewProvider {
 //    static var previews: some View {
-//        var manager = ContactsManager()
-//        ContactDetailView(
+//        let manager = ContactsManager()
+//        manager.loadContacts()
+//
+//        return ContactDetailView(
 //            contactsManager: manager,
-//            contact: Contact(
-//                id: UUID(), name: "Aaron",
-//                mobile: "+41 78 626 18 09",
-//                email: "aaron@icloud.com",
-//                address: Address(street: "Musterstrasse 12", city: "8047 Zürich", country: "Switzerland"),
-//                relationship: "X-Classmate",
-//                birthday: Date()
-//            )
+//            contact: .constant(manager.contacts.first!)
 //        )
 //    }
 // }

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		F815D27A2C3C673F00569722 /* ContactDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F815D2792C3C673F00569722 /* ContactDetailView.swift */; };
 		F82D7B572C4076E200987F03 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82D7B562C4076E200987F03 /* Contact.swift */; };
+		F83529182C43299100314FC1 /* SwiftDataContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83529172C43299100314FC1 /* SwiftDataContact.swift */; };
+		F83529362C44127100314FC1 /* CreateContactView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83529352C44127100314FC1 /* CreateContactView.swift */; };
 		F8610A502C385D76003B2FA3 /* FtHangoutsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8610A4F2C385D76003B2FA3 /* FtHangoutsApp.swift */; };
 		F8610A522C385D76003B2FA3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8610A512C385D76003B2FA3 /* ContentView.swift */; };
 		F8610A542C385D77003B2FA3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F8610A532C385D77003B2FA3 /* Assets.xcassets */; };
@@ -20,6 +22,8 @@
 /* Begin PBXFileReference section */
 		F815D2792C3C673F00569722 /* ContactDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactDetailView.swift; sourceTree = "<group>"; };
 		F82D7B562C4076E200987F03 /* Contact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contact.swift; sourceTree = "<group>"; };
+		F83529172C43299100314FC1 /* SwiftDataContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataContact.swift; sourceTree = "<group>"; };
+		F83529352C44127100314FC1 /* CreateContactView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateContactView.swift; sourceTree = "<group>"; };
 		F8610A4C2C385D76003B2FA3 /* FtHangouts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FtHangouts.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F8610A4F2C385D76003B2FA3 /* FtHangoutsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FtHangoutsApp.swift; sourceTree = "<group>"; };
 		F8610A512C385D76003B2FA3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -40,6 +44,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F83529162C43293B00314FC1 /* SwiftData */ = {
+			isa = PBXGroup;
+			children = (
+				F83529172C43299100314FC1 /* SwiftDataContact.swift */,
+			);
+			path = SwiftData;
+			sourceTree = "<group>";
+		};
 		F8610A432C385D76003B2FA3 = {
 			isa = PBXGroup;
 			children = (
@@ -59,7 +71,9 @@
 		F8610A4E2C385D76003B2FA3 /* FtHangouts */ = {
 			isa = PBXGroup;
 			children = (
+				F83529162C43293B00314FC1 /* SwiftData */,
 				F8B136402C3EEC5900968ECA /* EditContactView.swift */,
+				F83529352C44127100314FC1 /* CreateContactView.swift */,
 				F8610A4F2C385D76003B2FA3 /* FtHangoutsApp.swift */,
 				F8610A512C385D76003B2FA3 /* ContentView.swift */,
 				F8610A532C385D77003B2FA3 /* Assets.xcassets */,
@@ -154,7 +168,9 @@
 				F8B136432C3F299800968ECA /* ContactsManager.swift in Sources */,
 				F8B136412C3EEC5900968ECA /* EditContactView.swift in Sources */,
 				F8610A522C385D76003B2FA3 /* ContentView.swift in Sources */,
+				F83529362C44127100314FC1 /* CreateContactView.swift in Sources */,
 				F8610A502C385D76003B2FA3 /* FtHangoutsApp.swift in Sources */,
+				F83529182C43299100314FC1 /* SwiftDataContact.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
