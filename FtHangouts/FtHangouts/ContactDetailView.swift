@@ -5,6 +5,7 @@
 //  Created by Stefan Dukic on 08.07.2024.
 //
 
+import SwiftData
 import SwiftUI
 
 struct ContactDetailView: View {
@@ -94,6 +95,22 @@ struct ContactDetailView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
+                    if let firstName = contact.firstName {
+                        ContactDetail(labelText: Text("firstName")
+                            .font(.headline)) {
+                                Text(firstName)
+                                    .foregroundColor(.blue)
+                            }
+                    }
+
+                    if let lastName = contact.lastName {
+                        ContactDetail(labelText: Text("lastName")
+                            .font(.headline)) {
+                                Text(lastName)
+                                    .foregroundColor(.blue)
+                            }
+                    }
+
                     if let mobile = contact.mobile {
                         ContactDetail(labelText: Text("mobile")
                             .font(.headline)) {
@@ -170,6 +187,11 @@ struct ContactDetailView: View {
 //        )
 //    }
 // }
+
+#Preview {
+    ContentView(modelContext: (try! ModelContainer(for: SwiftDataContact.self)).mainContext)
+        .environmentObject(NavigationManager())
+}
 
 struct ContactDetail<Content: View>: View {
     var labelText: Text

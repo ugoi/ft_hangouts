@@ -5,6 +5,7 @@
 //  Created by Stefan Dukic on 10.07.2024.
 //
 
+import SwiftData
 import SwiftUI
 
 struct CreateContactView: View {
@@ -12,15 +13,15 @@ struct CreateContactView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var navigationManager: NavigationManager
 
-    @State private var details: [String: String] = ["firstName": "",
-                                                    "lastName": "",
-                                                    "mobile": "",
-                                                    "email": "",
-                                                    "street": "",
-                                                    "city": "",
-                                                    "country": "",
-                                                    "relationship": "",
-                                                    "birthday": "",
+    @State private var details: [String: Any] = ["firstName": "",
+                                                 "lastName": "",
+                                                 "mobile": "",
+                                                 "email": "",
+                                                 "street": "",
+                                                 "city": "",
+                                                 "country": "",
+                                                 "relationship": "",
+                                                 "birthday": Date(),
     ]
 
     // Define the order of the keys
@@ -42,7 +43,19 @@ struct CreateContactView: View {
                     }
                     Spacer()
                     Button(action: {
-                        let newContact = Contact(id: UUID(), firstName: details["firstName"], lastName: details["lastname"], mobile: details["mobile"], email: details["email"], address: Address(street: details["street"] ?? "", city: details["city"] ?? "", country: details["country"] ?? ""), relationship: details["relationship"] ?? ""
+                        let newContact = Contact(
+                            id: UUID(),
+                            firstName: details["firstName"] as? String ?? "",
+                            lastName: details["lastName"] as? String ?? "",
+                            mobile: details["mobile"] as? String ?? "",
+                            email: details["email"] as? String ?? "",
+                            address: Address(
+                                street: details["street"] as? String ?? "",
+                                city: details["city"] as? String ?? "",
+                                country: details["country"] as? String ?? ""
+                            ),
+                            relationship: details["relationship"] as? String ?? "",
+                            birthday: details["birthday"] as? Date ?? Date()
                         )
                         contactsManager.createContact(contact: newContact)
                         self.presentationMode.wrappedValue.dismiss()
@@ -79,11 +92,24 @@ struct CreateContactView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(Array(keyOrder), id: \.self) { key in
-                        EditContactDetail(
-                            labelText: Text(key),
-                            text: self.binding(for: key)
+                        if key == "birthday" {
+                            VStack(alignment: .leading) {
+                                DatePicker(key, selection: self.bindingDate(for: key), in: ...Date(), displayedComponents: .date)
+                                    .datePickerStyle(.compact)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 20.0)
+                            .padding(.vertical, 12.0)
+                            .background(Color("ContactDetail"))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                        ) {
+                        } else {
+                            EditContactDetail(
+                                labelText: Text(key),
+                                text: self.binding(for: key)
+
+                            ) {
+                            }
                         }
                     }
 
@@ -99,22 +125,21 @@ struct CreateContactView: View {
 
     private func binding(for key: String) -> Binding<String> {
         return .init(
-            get: { self.details[key, default: ""] },
+            get: { self.details[key] as? String ?? "" },
+            set: { self.details[key] = $0 })
+    }
+
+    private func bindingDate(for key: String) -> Binding<Date> {
+        return .init(
+            get: { self.details[key] as? Date ?? Date() },
             set: { self.details[key] = $0 })
     }
 }
 
-// struct EditContactView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        let manager = ContactsManager()
-//        manager.loadContacts()
-//
-//        return CreateContactView(
-//            contact: .constant(manager.contacts.first!), // Assuming you want to preview the first contact
-//            contactsManager: manager
-//        )
-//    }
-// }
+#Preview {
+    ContentView(modelContext: (try! ModelContainer(for: SwiftDataContact.self)).mainContext)
+        .environmentObject(NavigationManager())
+}
 
 struct CreateContactDetail<Content: View>: View {
     var labelText: Text

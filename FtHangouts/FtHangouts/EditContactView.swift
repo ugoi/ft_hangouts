@@ -58,7 +58,7 @@ struct EditContactView: View {
                     }
                     Spacer()
                     Button(action: {
-                        let newContact = Contact(id: contact.id, firstName: details["firstName"], lastName: details["lastname"], mobile: details["mobile"], email: details["email"], address: Address(street: details["street"] ?? "", city: details["city"] ?? "", country: details["country"] ?? "")
+                        let newContact = Contact(id: contact.id, firstName: details["firstName"], lastName: details["lastName"], mobile: details["mobile"], email: details["email"], address: Address(street: details["street"] ?? "", city: details["city"] ?? "", country: details["country"] ?? "")
                         )
                         contact.update(newContact: newContact)
                         self.presentationMode.wrappedValue.dismiss()

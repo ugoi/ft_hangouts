@@ -31,10 +31,29 @@ class SwiftDataContact: Identifiable {
         self.relationship = relationship
         self.birthday = birthday
     }
+
+    static func fromContact(contact: Contact) -> SwiftDataContact {
+        var swiftDataAddress: SwiftDataAddress?
+
+        if let address = contact.address {
+            swiftDataAddress = SwiftDataAddress(street: address.street, city: address.city, country: address.country)
+        }
+
+        return SwiftDataContact(id: contact.id, firstName: contact.firstName, lastName: contact.lastName, imageName: contact.imageName, mobile: contact.mobile, email: contact.email, address: swiftDataAddress, relationship: contact.relationship, birthday: contact.birthday)
+    }
+
+    func toContact(onUpdate: @escaping ((UUID, Contact) -> Void), onDelete: @escaping ((UUID) -> Void)) -> Contact {
+        var contactAddress: Address?
+
+        if let address = address {
+            contactAddress = Address(street: address.street, city: address.city, country: address.country)
+        }
+
+        return Contact(id: id, firstName: firstName, lastName: lastName, imageName: imageName, mobile: mobile, email: email, address: contactAddress, relationship: relationship, birthday: birthday, onUpdate: onUpdate, onDelete: onDelete)
+    }
 }
 
-@Model
-class SwiftDataAddress: Hashable {
+struct SwiftDataAddress: Codable {
     let street: String
     let city: String
     let country: String

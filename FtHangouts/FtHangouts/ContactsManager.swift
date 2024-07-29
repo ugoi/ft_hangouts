@@ -31,18 +31,15 @@ class ContactsManager: ObservableObject {
         if swiftDataContacts.isEmpty {
             contacts = []
         } else {
-            contacts = swiftDataContacts.map { Contact(id: $0.id, firstName: $0.firstName, mobile: $0.mobile, relationship: $0.relationship, onUpdate: updateContact, onDelete: deleteContact) }
+            contacts = swiftDataContacts.map { $0.toContact(onUpdate: updateContact, onDelete: deleteContact) }
         }
     }
 
     // Function to add a contact
     func createContact(contact: Contact) {
-        var newContact = contact
-        newContact.onDelete = deleteContact
-        newContact.onUpdate = updateContact
+        let swiftDataContact = SwiftDataContact.fromContact(contact: contact)
+        var newContact = swiftDataContact.toContact(onUpdate: updateContact, onDelete: deleteContact)
         contacts.append(newContact)
-
-        let swiftDataContact = SwiftDataContact(id: newContact.id, firstName: newContact.firstName, lastName: newContact.lastName, mobile: newContact.mobile, relationship: newContact.relationship)
         context.insert(swiftDataContact)
         loadContacts()
     }
