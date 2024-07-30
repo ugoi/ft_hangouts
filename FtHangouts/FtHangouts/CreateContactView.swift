@@ -13,21 +13,32 @@ struct CreateContactView: View {
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var navigationManager: NavigationManager
 
-    @State private var details: [String: Any] = ["firstName": "",
-                                                 "lastName": "",
-                                                 "mobile": "",
-                                                 "email": "",
-                                                 "street": "",
-                                                 "city": "",
-                                                 "country": "",
-                                                 "relationship": "",
-                                                 "birthday": Date(),
-    ]
-    
-    
+    init(contactsManager: ContactsManager) {
+        self.contactsManager = contactsManager
+    }
 
-    // Define the order of the keys
-    let keyOrder = ["firstName", "lastName", "mobile", "email", "street", "city", "country", "relationship", "birthday"]
+    @State private var details: [(String, String)] =
+        [
+            ("firstName", ""),
+            ("lastName", ""),
+            ("mobile", ""),
+            ("email", ""),
+            ("street", ""),
+            ("city", ""),
+            ("country", ""),
+            ("relationship", ""),
+        ]
+
+    @State private var birthday: Date? = nil
+
+    private func findDetail(for key: String) -> String? {
+        let detail = details.first(where: { $0.0 == key })?.1 as? String ?? nil
+
+        guard let detail = detail, !detail.isEmpty else {
+            return nil
+        }
+        return detail
+    }
 
     // UI
     var body: some View {
@@ -45,19 +56,28 @@ struct CreateContactView: View {
                     }
                     Spacer()
                     Button(action: {
+                        let street = findDetail(for: "street")
+                        let city = findDetail(for: "city")
+                        let country = findDetail(for: "country")
+
+                        let address: Address? = {
+                            if let street = street, !street.isEmpty,
+                               let city = city, !city.isEmpty,
+                               let country = country, !country.isEmpty {
+                                return Address(street: street, city: city, country: country)
+                            } else {
+                                return nil
+                            }
+                        }()
                         let newContact = Contact(
                             id: UUID(),
-                            firstName: details["firstName"] as? String ?? "",
-                            lastName: details["lastName"] as? String ?? "",
-                            mobile: details["mobile"] as? String ?? "",
-                            email: details["email"] as? String ?? "",
-                            address: Address(
-                                street: details["street"] as? String ?? "",
-                                city: details["city"] as? String ?? "",
-                                country: details["country"] as? String ?? ""
-                            ),
-                            relationship: details["relationship"] as? String ?? "",
-                            birthday: details["birthday"] as? Date ?? Date()
+                            firstName: findDetail(for: "firstName"),
+                            lastName: findDetail(for: "lastName"),
+                            mobile: findDetail(for: "mobile"),
+                            email: findDetail(for: "email"),
+                            address: address,
+                            relationship: findDetail(for: "relationship"),
+                            birthday: birthday
                         )
                         contactsManager.createContact(contact: newContact)
                         self.presentationMode.wrappedValue.dismiss()
@@ -93,27 +113,33 @@ struct CreateContactView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    ForEach(Array(keyOrder), id: \.self) { key in
-                        if key == "birthday" {
-                            VStack(alignment: .leading) {
-                                DatePicker(key, selection: self.bindingDate(for: key), in: ...Date(), displayedComponents: .date)
-                                    .datePickerStyle(.compact)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 20.0)
-                            .padding(.vertical, 12.0)
-                            .background(Color("ContactDetail"))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    ForEach($details, id: \.0) { $detail in
+                        EditContactDetail(
+                            labelText: Text(detail.0),
+                            text: $detail.1
 
-                        } else {
-                            EditContactDetail(
-                                labelText: Text(key),
-                                text: self.binding(for: key)
-
-                            ) {
-                            }
+                        ) {
                         }
                     }
+                    VStack(alignment: .leading) {
+                        Button(action: {
+                        }) {
+                            Text("add birthday")
+                        }.overlay {
+                            DatePicker(
+                                "",
+                                selection: Binding<Date>(get: { self.birthday ?? Date() }, set: { self.birthday = $0 }),
+                                in: ...Date(),
+                                displayedComponents: .date
+                            )
+                            .blendMode(.destinationOver)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20.0)
+                    .padding(.vertical, 12.0)
+                    .background(Color("ContactDetail"))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
 
                 Spacer()
@@ -121,18 +147,6 @@ struct CreateContactView: View {
             .navigationBarBackButtonHidden(true)
             .background(Color.black.opacity(0.05).edgesIgnoringSafeArea(.all))
         }
-    }
-
-    private func binding(for key: String) -> Binding<String> {
-        return .init(
-            get: { self.details[key] as? String ?? "" },
-            set: { self.details[key] = $0 })
-    }
-
-    private func bindingDate(for key: String) -> Binding<Date> {
-        return .init(
-            get: { self.details[key] as? Date ?? Date() },
-            set: { self.details[key] = $0 })
     }
 }
 
