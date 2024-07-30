@@ -23,6 +23,8 @@ struct CreateContactView: View {
                                                  "relationship": "",
                                                  "birthday": Date(),
     ]
+    
+    
 
     // Define the order of the keys
     let keyOrder = ["firstName", "lastName", "mobile", "email", "street", "city", "country", "relationship", "birthday"]
@@ -112,8 +114,6 @@ struct CreateContactView: View {
                             }
                         }
                     }
-
-//
                 }
 
                 Spacer()
@@ -151,13 +151,6 @@ struct CreateContactDetail<Content: View>: View {
             TextField("\(labelText)", text: $text)
                 .frame(alignment: .leading)
                 .multilineTextAlignment(.leading)
-
-//                if Content.self == EmptyView.self {
-//                    labelText
-//                        .foregroundStyle(Color("PlaceHolderText"))
-//                } else {
-//                    content
-//                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20.0)

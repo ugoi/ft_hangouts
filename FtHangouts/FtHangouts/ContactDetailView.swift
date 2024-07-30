@@ -13,6 +13,18 @@ struct ContactDetailView: View {
     @State private var showPage2 = false
     @Binding var contact: Contact
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    private var contactAttributes: [(String, String?)] {
+        [
+            ("First Name", contact.firstName),
+            ("Last Name", contact.lastName),
+            ("Mobile", contact.mobile),
+            ("Email", contact.email),
+            ("Address", contact.address != nil ? "\(contact.address!.street), \(contact.address!.city), \(contact.address!.country)" : nil),
+            ("Relationship", contact.relationship),
+            ("Birthday", contact.birthday?.formatted(date: .numeric, time: .omitted)),
+        ]
+    }
+
     // UI
     var body: some View {
         VStack {
@@ -95,58 +107,14 @@ struct ContactDetailView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    if let firstName = contact.firstName {
-                        ContactDetail(labelText: Text("firstName")
-                            .font(.headline)) {
-                                Text(firstName)
-                                    .foregroundColor(.blue)
-                            }
-                    }
-
-                    if let lastName = contact.lastName {
-                        ContactDetail(labelText: Text("lastName")
-                            .font(.headline)) {
-                                Text(lastName)
-                                    .foregroundColor(.blue)
-                            }
-                    }
-
-                    if let mobile = contact.mobile {
-                        ContactDetail(labelText: Text("mobile")
-                            .font(.headline)) {
-                                Text(mobile)
-                                    .foregroundColor(.blue)
-                            }
-                    }
-
-                    if let email = contact.email {
-                        ContactDetail(labelText: Text("email")
-                            .font(.headline)) {
-                                Text(email)
-                                    .foregroundColor(.blue)
-                            }
-                    }
-
-                    if let address = contact.address {
-                        ContactDetail(labelText: Text("address")
-                            .font(.headline)) {
-                                Text(address.street)
-                                Text(address.city)
-                                Text(address.country)
-                            }
-                    }
-                    if let relationship = contact.relationship {
-                        ContactDetail(labelText: Text("relationship")
-                            .font(.headline)) {
-                                Text(relationship)
-                            }
-                    }
-
-                    if let birthday = contact.birthday {
-                        ContactDetail(labelText: Text("birthday")
-                            .font(.headline)) {
-                                Text(birthday.formatted(date: .numeric, time: .omitted))
-                            }
+                    ForEach(contactAttributes, id: \.0) { attributeName, attributeValue in
+                        if let attributeValue = attributeValue {
+                            ContactDetail(labelText: Text(attributeName)
+                                .font(.headline)) {
+                                    Text(attributeValue)
+                                        .foregroundColor(.blue)
+                                }
+                        }
                     }
                 }
                 .padding()
@@ -175,18 +143,6 @@ struct ContactDetailView: View {
         }
     }
 }
-
-// struct ContactDetailView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        let manager = ContactsManager()
-//        manager.loadContacts()
-//
-//        return ContactDetailView(
-//            contactsManager: manager,
-//            contact: .constant(manager.contacts.first!)
-//        )
-//    }
-// }
 
 #Preview {
     ContentView(modelContext: (try! ModelContainer(for: SwiftDataContact.self)).mainContext)
