@@ -8,39 +8,38 @@
 import SwiftUI
 
 struct EditContactView: View {
-    @Binding var contact: Contact
-    @ObservedObject var contactsManager: ContactsManager
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    var contact: Contact
+//    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @EnvironmentObject var navigationManager: NavigationManager
+    @Environment(\.dismiss) var dismiss
 
-    @State private var details: [String: String] = ["firstName": "",
-                                                    "lastName": "",
-                                                    "mobile": "",
-                                                    "email": "",
-                                                    "street": "",
-                                                    "city": "",
-                                                    "country": "",
-                                                    "relationship": "",
-                                                    "birthday": "",
-    ]
+    @State private var details: [(String, String)]
 
-    // Define the order of the keys
-    let keyOrder = ["firstName", "lastName", "mobile", "email", "street", "city", "country", "relationship", "birthday"]
+    init(contact: Contact) {
+        self.contact = contact
 
-//    init(contact: Binding<Contact>, contactsManager: ContactsManager) {
-//        _contact = contact
-//        self.contactsManager = contactsManager
-//        details = ["firstName": contact.wrappedValue.firstName ?? "",
-//                   "lastName": "",
-//                   "mobile": "",
-//                   "email": "",
-//                   "street": "",
-//                   "city": "",
-//                   "country": "",
-//                   "relationship": "",
-//                   "birthday": "",
-//        ]
-//    }
+        details = [
+            ("firstName", contact.firstName ?? ""),
+            ("lastName", contact.lastName ?? ""),
+            ("mobile", contact.mobile ?? ""),
+            ("email", contact.email ?? ""),
+            ("street", contact.address?.street ?? ""),
+            ("city", contact.address?.city ?? ""),
+            ("country", contact.address?.country ?? ""),
+            ("relationship", contact.relationship ?? ""),
+        ]
+    }
+
+    @State private var birthday: Date? = nil
+
+    private func findDetail(for key: String) -> String? {
+        let detail = details.first(where: { $0.0 == key })?.1 as? String ?? nil
+
+        guard let detail = detail, !detail.isEmpty else {
+            return nil
+        }
+        return detail
+    }
 
     // UI
     var body: some View {
@@ -50,7 +49,7 @@ struct EditContactView: View {
                 HStack {
                     Button(action: {
                         // Action for back button
-                        self.presentationMode.wrappedValue.dismiss()
+                        dismiss()
                     }) {
                         Text("Cancle")
                             .foregroundColor(.blue)
@@ -58,10 +57,31 @@ struct EditContactView: View {
                     }
                     Spacer()
                     Button(action: {
-                        let newContact = Contact(id: contact.id, firstName: details["firstName"], lastName: details["lastName"], mobile: details["mobile"], email: details["email"], address: Address(street: details["street"] ?? "", city: details["city"] ?? "", country: details["country"] ?? "")
+                        let street = findDetail(for: "street")
+                        let city = findDetail(for: "city")
+                        let country = findDetail(for: "country")
+
+                        let address: Address? = {
+                            if let street = street, !street.isEmpty,
+                               let city = city, !city.isEmpty,
+                               let country = country, !country.isEmpty {
+                                return Address(street: street, city: city, country: country)
+                            } else {
+                                return nil
+                            }
+                        }()
+                        let newContact = Contact(
+                            id: contact.id,
+                            firstName: findDetail(for: "firstName"),
+                            lastName: findDetail(for: "lastName"),
+                            mobile: findDetail(for: "mobile"),
+                            email: findDetail(for: "email"),
+                            address: address,
+                            relationship: findDetail(for: "relationship"),
+                            birthday: birthday
                         )
                         contact.update(newContact: newContact)
-                        self.presentationMode.wrappedValue.dismiss()
+                        dismiss()
 
                     }) {
                         Text("Done").fontWeight(.bold)
@@ -94,20 +114,40 @@ struct EditContactView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    ForEach(Array(keyOrder), id: \.self) { key in
+                    ForEach($details, id: \.0) { $detail in
                         EditContactDetail(
-                            labelText: Text(key),
-                            text: self.binding(for: key)
+                            labelText: Text(detail.0),
+                            text: $detail.1
 
                         ) {
                         }
                     }
 
-//
+                    VStack(alignment: .leading) {
+                        Button(action: {
+                        }) {
+                            Text("add birthday")
+                        }.overlay {
+                            DatePicker(
+                                "",
+                                selection: Binding<Date>(get: { self.birthday ?? Date() }, set: { self.birthday = $0 }),
+                                in: ...Date(),
+                                displayedComponents: .date
+                            )
+                            .blendMode(.destinationOver)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20.0)
+                    .padding(.vertical, 12.0)
+                    .background(Color("ContactDetail"))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    //
+
                     DeleteContactButton(labelText: Text("delete")
                                         ,
                                         onDelete: {
-//                                            contactsManager.deleteContact(id: contact.id)
                                             print("Deleting...")
                                             contact.delete()
                                             navigationManager.path.removeLast(navigationManager.path.count)
@@ -141,25 +181,7 @@ struct EditContactView: View {
             UIApplication.shared.open(url)
         }
     }
-
-    private func binding(for key: String) -> Binding<String> {
-        return .init(
-            get: { self.details[key, default: ""] },
-            set: { self.details[key] = $0 })
-    }
 }
-
-// struct EditContactView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        let manager = ContactsManager()
-//        manager.loadContacts()
-//
-//        return EditContactView(
-//            contact: .constant(manager.contacts.first!), // Assuming you want to preview the first contact
-//            contactsManager: manager
-//        )
-//    }
-// }
 
 struct EditContactDetail<Content: View>: View {
     var labelText: Text
@@ -171,13 +193,6 @@ struct EditContactDetail<Content: View>: View {
             TextField("\(labelText)", text: $text)
                 .frame(alignment: .leading)
                 .multilineTextAlignment(.leading)
-
-//                if Content.self == EmptyView.self {
-//                    labelText
-//                        .foregroundStyle(Color("PlaceHolderText"))
-//                } else {
-//                    content
-//                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20.0)

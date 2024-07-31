@@ -38,7 +38,7 @@ class ContactsManager: ObservableObject {
     // Function to add a contact
     func createContact(contact: Contact) {
         let swiftDataContact = SwiftDataContact.fromContact(contact: contact)
-        var newContact = swiftDataContact.toContact(onUpdate: updateContact, onDelete: deleteContact)
+        let newContact = swiftDataContact.toContact(onUpdate: updateContact, onDelete: deleteContact)
         contacts.append(newContact)
         context.insert(swiftDataContact)
         loadContacts()
@@ -48,7 +48,7 @@ class ContactsManager: ObservableObject {
     func updateContact(id: UUID, newContact: Contact) {
         print("Update contact")
         if let index = contacts.firstIndex(where: { $0.id == id }) {
-            var modifiedContact = newContact
+            let modifiedContact = newContact
 
             modifiedContact.onDelete = deleteContact
             modifiedContact.onUpdate = updateContact

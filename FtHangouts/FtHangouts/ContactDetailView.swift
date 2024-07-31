@@ -9,9 +9,8 @@ import SwiftData
 import SwiftUI
 
 struct ContactDetailView: View {
-    @ObservedObject var contactsManager: ContactsManager
     @State private var showPage2 = false
-    @Binding var contact: Contact
+    var contact: Contact
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     private var contactAttributes: [(String, String?)] {
         [
@@ -47,7 +46,7 @@ struct ContactDetailView: View {
                     Button(action: {
                         // Action for edit button
                     }) {
-                        NavigationLink(destination: EditContactView(contact: $contact, contactsManager: contactsManager)) {
+                        NavigationLink(value: DatabaseTabOption.editContactView(id: contact.id)) {
                             Text("Edit")
                                 .font(.title3).foregroundStyle(.white).padding(.horizontal, 11.0).padding(.vertical, 6).background(Color("ButtonBackgroundLight")).clipShape(RoundedRectangle(cornerRadius: 30))
                         }
