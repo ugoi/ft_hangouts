@@ -115,7 +115,7 @@ struct CreateContactView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach($details, id: \.0) { $detail in
                         EditContactDetail(
-                            labelText: Text(detail.0),
+                            labelText: Text(LocalizedStringKey(detail.0)),
                             text: $detail.1
 
                         ) {

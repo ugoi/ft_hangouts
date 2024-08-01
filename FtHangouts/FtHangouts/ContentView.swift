@@ -89,7 +89,13 @@ struct ContentView: View {
     }
 }
 
-#Preview {
+#Preview("English") {
     ContentView(modelContext: (try! ModelContainer(for: SwiftDataContact.self)).mainContext)
+        .environmentObject(NavigationManager())
+}
+
+#Preview("German") {
+    ContentView(modelContext: (try! ModelContainer(for: SwiftDataContact.self)).mainContext)
+        .environment(\.locale, Locale(identifier: "DE"))
         .environmentObject(NavigationManager())
 }
