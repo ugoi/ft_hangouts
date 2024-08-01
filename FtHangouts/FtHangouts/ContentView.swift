@@ -17,6 +17,8 @@ struct ContentView: View {
     @StateObject private var manager: ContactsManager
     @EnvironmentObject var navigationManager: NavigationManager
     @Query private var swiftDataContacts: [SwiftDataContact]
+    @State private var toolbarColor: Color = Color.red
+    @State private var toolbarVisibility: Visibility = Visibility.hidden
 
     init(modelContext: ModelContext) {
         let manager = ContactsManager(context: modelContext)
@@ -26,18 +28,6 @@ struct ContentView: View {
     var body: some View {
         NavigationStack(path: $navigationManager.path) {
             VStack(alignment: .leading) {
-                HStack {
-                    Text("Contacts")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Spacer()
-
-                    NavigationLink(value: DatabaseTabOption.createContactView) {
-                        Image(systemName: "plus")
-                    }
-                }
-
                 List {
                     ForEach(manager.contacts) { contact in
                         NavigationLink(value: DatabaseTabOption.contactDetailView(id: contact.id)) {
@@ -46,7 +36,42 @@ struct ContentView: View {
                         .listRowInsets(EdgeInsets())
                     }
                 }
+                .navigationTitle("Contacts")
+                .toolbarBackground(toolbarColor, for: .navigationBar)
+                .toolbarBackground(toolbarVisibility, for: .navigationBar)
                 .listStyle(PlainListStyle())
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink(value: DatabaseTabOption.createContactView) {
+                            Image(systemName: "plus")
+                        }
+                    }
+
+                    ToolbarItem(placement: .topBarLeading) {
+                        Menu {
+                            Button(action: {
+                                toolbarVisibility = .hidden
+                            }) {
+                                Text("Default")
+                            }
+                            Button(action: {
+                                toolbarVisibility = .visible
+                                toolbarColor = .green
+                            }) {
+                                Text("Green")
+                            }
+                            Button(action: {
+                                toolbarVisibility = .visible
+                                toolbarColor = .red
+                            }) {
+                                Text("Red")
+                            }
+
+                        } label: {
+                            Label(title: { Text("Menu") }, icon: { Image(systemName: "slider.horizontal.3") })
+                        }
+                    }
+                }
                 .navigationDestination(for: DatabaseTabOption.self, destination: { value in
                     switch value {
                     case .createContactView:

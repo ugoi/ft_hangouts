@@ -145,7 +145,8 @@ struct CreateContactView: View {
                 Spacer()
             }
             .navigationBarBackButtonHidden(true)
-            .background(Color.black.opacity(0.05).edgesIgnoringSafeArea(.all))
+            .background(Color.black.opacity(0.05)
+                .edgesIgnoringSafeArea(.all))
         }
     }
 }
