@@ -22,12 +22,12 @@ struct FtHangoutsApp: App {
             ContentView(modelContext: container.mainContext)
                 .environmentObject(navigationManager)
         }
-//        .modelContainer(for: SwiftDataContact.self)
+        .modelContainer(container)
     }
 
     init() {
         do {
-            container = try ModelContainer(for: SwiftDataContact.self)
+            container = try ModelContainer(for: SwiftDataContact.self, SwiftDataTimeSetInBackground.self)
         } catch {
             fatalError("Failed to create ModelContainer for Movie.")
         }

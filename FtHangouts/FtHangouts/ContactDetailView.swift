@@ -127,18 +127,18 @@ struct ContactDetailView: View {
 
     // Logic
     func sendIMessage() {
-        let phoneNumber = contact.mobile ?? ""
-
-        if let url = URL(string: "sms:\(phoneNumber)"), UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url)
+        if let phoneNumber = contact.mobile {
+            if let url = URL(string: "sms:\(phoneNumber)"), UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            }
         }
     }
 
     func call() {
-        let phoneNumber = contact.mobile ?? ""
-
-        if let url = URL(string: "tel:\(phoneNumber)"), UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url)
+        if let phoneNumber = contact.mobile {
+            if let url = URL(string: "tel:\(phoneNumber)"), UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            }
         }
     }
 }

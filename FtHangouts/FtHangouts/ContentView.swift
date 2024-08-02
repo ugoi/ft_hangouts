@@ -14,9 +14,11 @@ enum DatabaseTabOption: Hashable, Codable {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var manager: ContactsManager
     @EnvironmentObject var navigationManager: NavigationManager
-    @Query private var swiftDataContacts: [SwiftDataContact]
+    @Query private var swiftDataTimeSetInBackground: [SwiftDataTimeSetInBackground]
+    @State private var showTimeSetInBackgroundAlert: Bool = true
     @State private var toolbarColor: Color = Color.red
     @State private var toolbarVisibility: Visibility = Visibility.hidden
 
@@ -36,6 +38,15 @@ struct ContentView: View {
                         .listRowInsets(EdgeInsets())
                     }
                 }
+                .alert(isPresented: $showTimeSetInBackgroundAlert, content: {
+                    Alert(title: Text("Last opened:"),
+                          message: Text(swiftDataTimeSetInBackground.first?.timeSetInBackground.formatted(date: .omitted, time: .shortened) ?? "Error"),
+                          dismissButton: Alert.Button.default(
+                              Text("Accept"), action: {
+                                  showTimeSetInBackgroundAlert = false
+                              })
+                    )
+                })
                 .navigationTitle("Contacts")
                 .toolbarBackground(toolbarColor, for: .navigationBar)
                 .toolbarBackground(toolbarVisibility, for: .navigationBar)
@@ -85,6 +96,31 @@ struct ContentView: View {
                 })
             }
             .padding(.horizontal, 20.0)
+        }
+
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .active:
+                print("active")
+                if let timeSetInBackground = swiftDataTimeSetInBackground.first?.timeSetInBackground.formatted(date: .omitted, time: .shortened) {
+                    print(timeSetInBackground)
+                }
+
+            case .inactive:
+                print("inactive")
+            case .background:
+                print("background")
+                if swiftDataTimeSetInBackground.first == nil {
+                    context.insert(SwiftDataTimeSetInBackground(timeSetInBackground: Date.now))
+                } else {
+                    swiftDataTimeSetInBackground.first?.timeSetInBackground = Date.now
+                    try? context.save()
+                }
+                showTimeSetInBackgroundAlert = true
+
+            default:
+                break
+            }
         }
     }
 }

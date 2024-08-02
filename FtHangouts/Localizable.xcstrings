@@ -37,6 +37,9 @@
         }
       }
     },
+    "Accept" : {
+
+    },
     "add birthday" : {
       "localizations" : {
         "de" : {
@@ -190,6 +193,9 @@
           }
         }
       }
+    },
+    "Last opened:" : {
+
     },
     "lastName" : {
       "extractionState" : "manual",
