@@ -18,7 +18,7 @@ struct ContentView: View {
     @StateObject private var manager: ContactsManager
     @EnvironmentObject var navigationManager: NavigationManager
     @Query private var swiftDataTimeSetInBackground: [SwiftDataTimeSetInBackground]
-    @State private var showTimeSetInBackgroundAlert: Bool = true
+    @State private var showTimeSetInBackgroundAlert: Bool = false
     @State private var toolbarColor: Color = Color.red
     @State private var toolbarVisibility: Visibility = Visibility.hidden
 
@@ -103,6 +103,7 @@ struct ContentView: View {
             case .active:
                 print("active")
                 if let timeSetInBackground = swiftDataTimeSetInBackground.first?.timeSetInBackground.formatted(date: .omitted, time: .shortened) {
+                    showTimeSetInBackgroundAlert = true
                     print(timeSetInBackground)
                 }
 
@@ -116,7 +117,6 @@ struct ContentView: View {
                     swiftDataTimeSetInBackground.first?.timeSetInBackground = Date.now
                     try? context.save()
                 }
-                showTimeSetInBackgroundAlert = true
 
             default:
                 break
