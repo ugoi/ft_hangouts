@@ -17,28 +17,29 @@ struct CreateContactView: View {
         self.contactsManager = contactsManager
     }
 
-    @State private var details: [(String, String)] =
-        [
-            ("firstName", ""),
-            ("lastName", ""),
-            ("mobile", ""),
-            ("email", ""),
-            ("street", ""),
-            ("city", ""),
-            ("country", ""),
-            ("relationship", ""),
-        ]
+    enum Field: Hashable {
+        case firstName
+        case lastName
+        case mobile
+        case email
+        case street
+        case city
+        case country
+        case relationship
+        case birthday
+    }
 
+    @State private var firstName = ""
+    @State private var lastName = ""
+    @State private var mobile = ""
+    @State private var email = ""
+    @State private var street = ""
+    @State private var city = ""
+    @State private var country = ""
+    @State private var relationship = ""
     @State private var birthday: Date? = nil
 
-    private func findDetail(for key: String) -> String? {
-        let detail = details.first(where: { $0.0 == key })?.1 as? String ?? nil
-
-        guard let detail = detail, !detail.isEmpty else {
-            return nil
-        }
-        return detail
-    }
+    @FocusState private var focusedField: Field?
 
     // UI
     var body: some View {
@@ -56,27 +57,17 @@ struct CreateContactView: View {
                     }
                     Spacer()
                     Button(action: {
-                        let street = findDetail(for: "street")
-                        let city = findDetail(for: "city")
-                        let country = findDetail(for: "country")
-
                         let address: Address? = {
-                            if let street = street, !street.isEmpty,
-                               let city = city, !city.isEmpty,
-                               let country = country, !country.isEmpty {
-                                return Address(street: street, city: city, country: country)
-                            } else {
-                                return nil
-                            }
+                            Address(street: street, city: city, country: country)
                         }()
                         let newContact = Contact(
                             id: UUID(),
-                            firstName: findDetail(for: "firstName"),
-                            lastName: findDetail(for: "lastName"),
-                            mobile: findDetail(for: "mobile"),
-                            email: findDetail(for: "email"),
+                            firstName: firstName,
+                            lastName: lastName,
+                            mobile: mobile,
+                            email: email,
                             address: address,
-                            relationship: findDetail(for: "relationship"),
+                            relationship: relationship,
                             birthday: birthday
                         )
                         contactsManager.createContact(contact: newContact)
@@ -113,19 +104,82 @@ struct CreateContactView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    ForEach($details, id: \.0) { $detail in
-                        EditContactDetail(
-                            labelText: Text(LocalizedStringKey(detail.0)),
-                            text: $detail.1
-
-                        ) {
+                    EditContactDetail(
+                        labelText: Text("firstName"),
+                        text: $firstName
+                    ) {}
+                        .focused($focusedField, equals: .firstName)
+                        .onSubmit {
+                            focusedField = .lastName
                         }
-                    }
+
+                    EditContactDetail(
+                        labelText: Text("lastName"),
+                        text: $lastName
+                    ) {}
+                        .focused($focusedField, equals: .lastName)
+                        .onSubmit {
+                            focusedField = .mobile
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("mobile"),
+                        text: $mobile
+                    ) {}
+                        .focused($focusedField, equals: .mobile)
+                        .onSubmit {
+                            focusedField = .email
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("email"),
+                        text: $email
+                    ) {}
+                        .focused($focusedField, equals: .email)
+                        .onSubmit {
+                            focusedField = .street
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("street"),
+                        text: $street
+                    ) {}
+                        .focused($focusedField, equals: .street)
+                        .onSubmit {
+                            focusedField = .city
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("city"),
+                        text: $city
+                    ) {}
+                        .focused($focusedField, equals: .city)
+                        .onSubmit {
+                            focusedField = .country
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("country"),
+                        text: $country
+                    ) {}
+                        .focused($focusedField, equals: .country)
+                        .onSubmit {
+                            focusedField = .relationship
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("relationship"),
+                        text: $relationship
+                    ) {}
+                        .focused($focusedField, equals: .relationship)
+                        .onSubmit {
+                            focusedField = .birthday
+                        }
+
                     VStack(alignment: .leading) {
-                        Button(action: {
-                        }) {
-                            Text("add birthday")
-                        }.overlay {
+                        Button("add birthday") {
+                        }
+                        .overlay {
                             DatePicker(
                                 "",
                                 selection: Binding<Date>(get: { self.birthday ?? Date() }, set: { self.birthday = $0 }),
@@ -133,7 +187,14 @@ struct CreateContactView: View {
                                 displayedComponents: .date
                             )
                             .blendMode(.destinationOver)
+                            .onAppear {
+                                print("DatePicker shown")
+                            }
                         }
+                    }
+                    .focused($focusedField, equals: .birthday)
+                    .onSubmit {
+                        focusedField = nil
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20.0)

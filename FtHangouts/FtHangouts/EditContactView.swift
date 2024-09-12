@@ -13,32 +13,32 @@ struct EditContactView: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @Environment(\.dismiss) var dismiss
 
-    @State private var details: [(String, String)]
+    enum Field: Hashable {
+        case firstName
+        case lastName
+        case mobile
+        case email
+        case street
+        case city
+        case country
+        case relationship
+        case birthday
+    }
+
+    @State private var firstName = ""
+    @State private var lastName = ""
+    @State private var mobile = ""
+    @State private var email = ""
+    @State private var street = ""
+    @State private var city = ""
+    @State private var country = ""
+    @State private var relationship = ""
+    @State private var birthday: Date? = nil
+
+    @FocusState private var focusedField: Field?
 
     init(contact: Contact) {
         self.contact = contact
-
-        details = [
-            ("firstName", contact.firstName ?? ""),
-            ("lastName", contact.lastName ?? ""),
-            ("mobile", contact.mobile ?? ""),
-            ("email", contact.email ?? ""),
-            ("street", contact.address?.street ?? ""),
-            ("city", contact.address?.city ?? ""),
-            ("country", contact.address?.country ?? ""),
-            ("relationship", contact.relationship ?? ""),
-        ]
-    }
-
-    @State private var birthday: Date? = nil
-
-    private func findDetail(for key: String) -> String? {
-        let detail = details.first(where: { $0.0 == key })?.1 as? String ?? nil
-
-        guard let detail = detail, !detail.isEmpty else {
-            return nil
-        }
-        return detail
     }
 
     // UI
@@ -57,27 +57,17 @@ struct EditContactView: View {
                     }
                     Spacer()
                     Button(action: {
-                        let street = findDetail(for: "street")
-                        let city = findDetail(for: "city")
-                        let country = findDetail(for: "country")
-
                         let address: Address? = {
-                            if let street = street, !street.isEmpty,
-                               let city = city, !city.isEmpty,
-                               let country = country, !country.isEmpty {
-                                return Address(street: street, city: city, country: country)
-                            } else {
-                                return nil
-                            }
+                            Address(street: street, city: city, country: country)
                         }()
                         let newContact = Contact(
                             id: contact.id,
-                            firstName: findDetail(for: "firstName"),
-                            lastName: findDetail(for: "lastName"),
-                            mobile: findDetail(for: "mobile"),
-                            email: findDetail(for: "email"),
+                            firstName: firstName,
+                            lastName: lastName,
+                            mobile: mobile,
+                            email: email,
                             address: address,
-                            relationship: findDetail(for: "relationship"),
+                            relationship: relationship,
                             birthday: birthday
                         )
                         contact.update(newContact: newContact)
@@ -114,20 +104,84 @@ struct EditContactView: View {
             // Contact details
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    ForEach($details, id: \.0) { $detail in
-                        EditContactDetail(
-                            labelText: Text(detail.0),
-                            text: $detail.1
-
-                        ) {
+                    EditContactDetail(
+                        labelText: Text("firstName"),
+                        text: $firstName
+                    ) {}
+                        .focused($focusedField, equals: .firstName)
+                        .onSubmit {
+                            focusedField = .lastName
                         }
-                    }
+
+                    EditContactDetail(
+                        labelText: Text("lastName"),
+                        text: $lastName
+                    ) {}
+                        .focused($focusedField, equals: .lastName)
+                        .onSubmit {
+                            focusedField = .mobile
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("mobile"),
+                        text: $mobile
+                    ) {}
+                        .focused($focusedField, equals: .mobile)
+                        .onSubmit {
+                            focusedField = .email
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("email"),
+                        text: $email
+                    ) {}
+                        .focused($focusedField, equals: .email)
+                        .onSubmit {
+                            focusedField = .street
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("street"),
+                        text: $street
+                    ) {}
+                        .focused($focusedField, equals: .street)
+                        .onSubmit {
+                            focusedField = .city
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("city"),
+                        text: $city
+                    ) {}
+                        .focused($focusedField, equals: .city)
+                        .onSubmit {
+                            focusedField = .country
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("country"),
+                        text: $country
+                    ) {}
+                        .focused($focusedField, equals: .country)
+                        .onSubmit {
+                            focusedField = .relationship
+                        }
+
+                    EditContactDetail(
+                        labelText: Text("relationship"),
+                        text: $relationship
+                    ) {}
+                        .focused($focusedField, equals: .relationship)
+                        .onSubmit {
+                            focusedField = .birthday
+                        }
 
                     VStack(alignment: .leading) {
                         Button(action: {
                         }) {
                             Text("add birthday")
-                        }.overlay {
+                        }
+                        .overlay {
                             DatePicker(
                                 "",
                                 selection: Binding<Date>(get: { self.birthday ?? Date() }, set: { self.birthday = $0 }),
@@ -163,6 +217,18 @@ struct EditContactView: View {
             .navigationBarBackButtonHidden(true)
             .background(Color.black.opacity(0.05).edgesIgnoringSafeArea(.all))
         }
+        .onAppear {
+            // Initialize the state variables when the view appears
+            firstName = contact.firstName ?? ""
+            lastName = contact.lastName ?? ""
+            mobile = contact.mobile ?? ""
+            email = contact.email ?? ""
+            street = contact.address?.street ?? ""
+            city = contact.address?.city ?? ""
+            country = contact.address?.country ?? ""
+            relationship = contact.relationship ?? ""
+            birthday = contact.birthday
+        }
     }
 
     // Logic
@@ -187,12 +253,21 @@ struct EditContactDetail<Content: View>: View {
     var labelText: Text
     @Binding var text: String
     @ViewBuilder let content: Content
+    @FocusState private var textfieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading) {
-            TextField("\(labelText)", text: $text)
-                .frame(alignment: .leading)
-                .multilineTextAlignment(.leading)
+            TextField("\(labelText)", text: Binding(
+                get: { self.text.isEmpty ? "" : self.text },
+                set: { newValue in self.text = newValue.isEmpty ? "" : newValue }
+            ))
+            .frame(alignment: .leading)
+            .multilineTextAlignment(.leading)
+            .focused($textfieldFocused)
+            .onLongPressGesture(minimumDuration: 0.0) {
+                textfieldFocused = true
+            }
+            .autocorrectionDisabled()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20.0)
