@@ -3,9 +3,6 @@
 ## Summary
 Create a mobile contact management application to understand mobile systems and OS interactions.
 
-## Version
-4
-
 ## Introduction
 Design a mobile app for creating, managing contacts, and sending text messages. Learn Android or iOS SDKs.
 
@@ -39,5 +36,14 @@ Design a mobile app for creating, managing contacts, and sending text messages. 
 - Material Design.
 - Call contacts.
 
-## Submission
-Submit via Git repository. Ensure correct folder and file names.
+## Screenshots
+<table width="100%">
+  <tr>
+    <td width="50%"><img src="screenshots/home.png" width="100%"></td>
+    <td width="50%"><img src="screenshots/create-contact.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="screenshots/contact.png" width="100%"></td>
+    <td width="50%"><img src="screenshots/change-color.png" width="100%"></td>
+  </tr>
+</table>
